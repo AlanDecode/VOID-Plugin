@@ -2,6 +2,8 @@
 if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 /**
  * 字数统计相关
+ * 
+ * @author AlanDecode | 熊猫小A
  */
 
 class VOID_WordCount

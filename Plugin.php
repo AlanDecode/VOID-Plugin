@@ -39,6 +39,11 @@ class VOID_Plugin implements Typecho_Plugin_Interface
         // 注册 hook
         Typecho_Plugin::factory('Widget_Contents_Post_Edit')->finishPublish = array('VOID_Plugin', 'updateWordCount');
 
+        /** 点赞相关 */
+        // 创建字段
+        if (!array_key_exists('likes', $db->fetchRow($db->select()->from('table.contents'))))
+            $db->query('ALTER TABLE `'. $prefix .'contents` ADD `likes` INT(10) DEFAULT 0;');
+        Helper::addAction('void_like', 'VOID_Action');
     }
 
     /**
@@ -51,7 +56,7 @@ class VOID_Plugin implements Typecho_Plugin_Interface
      */
     public static function deactivate()
 	{
-        
+        Helper::removeAction("void_like");
     }
     
     /**
