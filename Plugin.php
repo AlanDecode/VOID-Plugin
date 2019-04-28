@@ -55,8 +55,10 @@ class VOID_Plugin implements Typecho_Plugin_Interface
         //增加浏览数
         Typecho_Plugin::factory('Widget_Archive')->beforeRender = array('VOID_Plugin', 'updateViewCount');
 
-        // 将添加的字段加入查询
-        Typecho_Plugin::factory('Widget_Archive')->select = array('VOID_Plugin', 'selectHandle');
+        // 增加查询方法
+        Typecho_Plugin::factory('Widget_Archive')->___viewsNum = array('VOID_Plugin', 'viewsNum');
+        Typecho_Plugin::factory('Widget_Archive')->___likes = array('VOID_Plugin', 'likes');
+        Typecho_Plugin::factory('Widget_Archive')->___wordCount = array('VOID_Plugin', 'wordCount');
     }
 
     /**
@@ -94,30 +96,39 @@ class VOID_Plugin implements Typecho_Plugin_Interface
     public static function personalConfig(Typecho_Widget_Helper_Form $form){}
 
     /**
-     * 自定义字段加入查询
+     * 返回文章字数
      */
-    public static function selectHandle($archive){
-        $user = Typecho_Widget::widget('Widget_User');
-        if ('post' == $archive->parameter->type || 'page' == $archive->parameter->type) {
-            if ($user->hasLogin()) {
-                $select = $archive->select()->where('table.contents.status = ? OR table.contents.status = ? OR
-                        (table.contents.status = ? AND table.contents.authorId = ?)',
-                        'publish', 'hidden', 'private', $user->uid);
-            } else {
-                $select = $archive->select()->where('table.contents.status = ? OR table.contents.status = ?',
-                        'publish', 'hidden');
-            }
-        } else {
-            if ($user->hasLogin()) {
-                $select = $archive->select()->where('table.contents.status = ? OR
-                        (table.contents.status = ? AND table.contents.authorId = ?)', 'publish', 'private', $user->uid);
-            } else {
-                $select = $archive->select()->where('table.contents.status = ?', 'publish');
-            }
-        }
-        $select->where('table.contents.created < ?', Typecho_Date::gmtTime());
-        $select->cleanAttribute('fields');
-        return $select;
+    public static function viewsNum($archive)
+    {
+        $db = Typecho_Db::get();
+        $row = $db->fetchRow($db->select('viewsNum')
+            ->from('table.contents')
+            ->where('cid = ?', $archive->cid));
+        return $row['viewsNum'];
+    }
+
+    /**
+     * 返回文章点赞数
+     */
+    public static function likes($archive)
+    {
+        $db = Typecho_Db::get();
+        $row = $db->fetchRow($db->select('likes')
+            ->from('table.contents')
+            ->where('cid = ?', $archive->cid));
+        return $row['likes'];
+    }
+
+    /**
+     * 返回文章字数
+     */
+    public static function wordCount($archive)
+    {
+        $db = Typecho_Db::get();
+        $row = $db->fetchRow($db->select('wordCount')
+            ->from('table.contents')
+            ->where('cid = ?', $archive->cid));
+        return $row['wordCount'];
     }
 
     /**
