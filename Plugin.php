@@ -26,14 +26,17 @@ class VOID_Plugin implements Typecho_Plugin_Interface
     {
         $db = Typecho_Db::get();
         $prefix = $db->getPrefix();
+        $adapterName =  strtolower($db->getAdapterName());
 
         /** 字数统计相关 */
         // contents 表中若无 wordCount 字段则添加
         if (!array_key_exists('wordCount', $db->fetchRow($db->select()->from('table.contents'))))
-            $db->query('ALTER TABLE `'. $prefix .'contents` ADD `wordCount` INT(10) DEFAULT 0;');
+            $db->query('ALTER TABLE `'. $prefix .'contents` ADD COLUMN `wordCount` INT(10) DEFAULT 0;');
         // 删除以前创建的沙雕字段
-        if (array_key_exists('wordCountTime', $db->fetchRow($db->select()->from('table.contents'))))
-            $db->query('ALTER TABLE `'. $prefix .'contents` DROP `wordCountTime`;');
+        if(preg_match('/mysql/i', $adapterName)) {
+            if (array_key_exists('wordCountTime', $db->fetchRow($db->select()->from('table.contents'))))
+                $db->query('ALTER TABLE `'. $prefix .'contents` DROP COLUMN `wordCountTime`;');
+        }
         // 更新一次字数统计
         VOID_WordCount::updateAllWordCount();
         // 注册 hook
@@ -42,16 +45,18 @@ class VOID_Plugin implements Typecho_Plugin_Interface
         /** 点赞相关 */
         // 创建字段
         if (!array_key_exists('likes', $db->fetchRow($db->select()->from('table.contents'))))
-            $db->query('ALTER TABLE `'. $prefix .'contents` ADD `likes` INT(10) DEFAULT 0;');
+            $db->query('ALTER TABLE `'. $prefix .'contents` ADD COLUMN `likes` INT(10) DEFAULT 0;');
         Helper::addAction('void_like', 'VOID_Action');
 
         /** 浏览量统计相关 */
         // 创建字段
         if (!array_key_exists('viewsNum', $db->fetchRow($db->select()->from('table.contents'))))
-            $db->query('ALTER TABLE `'. $prefix .'contents` ADD `viewsNum` INT(10) DEFAULT 0;');
+            $db->query('ALTER TABLE `'. $prefix .'contents` ADD COLUMN `viewsNum` INT(10) DEFAULT 0;');
         // 删除以前创建的沙雕字段
-        if (array_key_exists('views', $db->fetchRow($db->select()->from('table.contents'))))
-            $db->query('ALTER TABLE `'. $prefix .'contents` DROP `views`;');
+        if(preg_match('/mysql/i', $adapterName)) {
+            if (array_key_exists('views', $db->fetchRow($db->select()->from('table.contents'))))
+                $db->query('ALTER TABLE `'. $prefix .'contents` DROP COLUMN `views`;');
+        }
         //增加浏览数
         Typecho_Plugin::factory('Widget_Archive')->beforeRender = array('VOID_Plugin', 'updateViewCount');
 
