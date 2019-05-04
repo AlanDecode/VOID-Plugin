@@ -5,7 +5,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
  * 
  * @package VOID
  * @author 熊猫小A
- * @version 1.00
+ * @version 1.01
  * @link https://blog.imalan.cn
  */
 
@@ -13,7 +13,7 @@ require_once('libs/WordCount.php');
 
 class VOID_Plugin implements Typecho_Plugin_Interface
 {
-    public static $VERSION = 1.00;
+    public static $VERSION = 1.01;
 
     /**
      * 激活插件方法,如果激活失败,直接抛出异常
