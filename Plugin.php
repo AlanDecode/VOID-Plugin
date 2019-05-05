@@ -53,10 +53,10 @@ class VOID_Plugin implements Typecho_Plugin_Interface
         if (!array_key_exists('viewsNum', $db->fetchRow($db->select()->from('table.contents'))))
             $db->query('ALTER TABLE `'. $prefix .'contents` ADD COLUMN `viewsNum` INT(10) DEFAULT 0;');
         // 删除以前创建的沙雕字段
-        if(preg_match('/mysql/i', $adapterName)) {
-            if (array_key_exists('views', $db->fetchRow($db->select()->from('table.contents'))))
-                $db->query('ALTER TABLE `'. $prefix .'contents` DROP COLUMN `views`;');
-        }
+        // if(preg_match('/mysql/i', $adapterName)) {
+        //     if (array_key_exists('views', $db->fetchRow($db->select()->from('table.contents'))))
+        //         $db->query('ALTER TABLE `'. $prefix .'contents` DROP COLUMN `views`;');
+        // }
         //增加浏览数
         Typecho_Plugin::factory('Widget_Archive')->beforeRender = array('VOID_Plugin', 'updateViewCount');
 
