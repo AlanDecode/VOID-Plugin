@@ -5,7 +5,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
  * 
  * @package VOID
  * @author 熊猫小A
- * @version 1.01
+ * @version 1.1
  * @link https://blog.imalan.cn
  */
 
@@ -13,7 +13,7 @@ require_once('libs/WordCount.php');
 
 class VOID_Plugin implements Typecho_Plugin_Interface
 {
-    public static $VERSION = 1.01;
+    public static $VERSION = 1.1;
 
     /**
      * 激活插件方法,如果激活失败,直接抛出异常
@@ -46,7 +46,14 @@ class VOID_Plugin implements Typecho_Plugin_Interface
         // 创建字段
         if (!array_key_exists('likes', $db->fetchRow($db->select()->from('table.contents'))))
             $db->query('ALTER TABLE `'. $prefix .'contents` ADD COLUMN `likes` INT(10) DEFAULT 0;');
-        Helper::addAction('void_like', 'VOID_Action');
+        Helper::addAction('void_vote', 'VOID_Action');
+
+        /** 评论赞踩 */
+        // 创建字段
+        if (!array_key_exists('likes', $db->fetchRow($db->select()->from('table.comments'))))
+            $db->query('ALTER TABLE `'. $prefix .'comments` ADD COLUMN `likes` INT(10) DEFAULT 0;');
+        if (!array_key_exists('dislikes', $db->fetchRow($db->select()->from('table.comments'))))
+            $db->query('ALTER TABLE `'. $prefix .'comments` ADD COLUMN `dislikes` INT(10) DEFAULT 0;');
 
         /** 浏览量统计相关 */
         // 创建字段
