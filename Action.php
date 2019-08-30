@@ -15,7 +15,7 @@ class VOID_Action extends Typecho_Widget implements Widget_Interface_Do
         $this->on($this->request->is('content'))->vote_content();
         $this->on($this->request->is('comment'))->vote_comment();
 
-        $this->response->goBack();
+        //$this->response->goBack();
     }
 
     private function vote_comment()
@@ -34,6 +34,7 @@ class VOID_Action extends Typecho_Widget implements Widget_Interface_Do
 
     private function vote_excute($table, $key, $id, $field, $type)
     {
+        header("Content-type:application/json");
         $db = Typecho_Db::get();
 
         // 检测重复 IP
