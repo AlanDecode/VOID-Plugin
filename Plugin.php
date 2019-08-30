@@ -86,10 +86,17 @@ class VOID_Plugin implements Typecho_Plugin_Interface
                     `table` char(32) not null,
                     `type` char(32) not null,
                     `agent` text,
-                    `ip` text,
+                    `ip` varchar(128),
                     primary key (`vid`)
-                ) default charset=utf8';
-                $db->query($sql);
+                ) default charset=utf8;
+                CREATE INDEX index_ip ON '.$table_name.'(`ip`);
+                CREATE INDEX index_id ON '.$table_name.'(`id`);
+                CREATE INDEX index_table ON '.$table_name.'(`table`)';
+
+                $sqls = explode(';', $sql);
+                foreach ($sqls as $sql) {
+                    $db->query($sql);
+                }
             }
         } catch (Typecho_Db_Query_Exception $th) {
             throw new Typecho_Plugin_Exception($th->getMessage());
