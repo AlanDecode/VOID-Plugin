@@ -106,7 +106,7 @@ class VOID_Plugin implements Typecho_Plugin_Interface
      */
     public static function deactivate()
 	{
-        Helper::removeAction("void_like");
+        Helper::removeAction("void_vote");
     }
     
     /**
