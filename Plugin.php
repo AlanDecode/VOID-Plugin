@@ -46,14 +46,16 @@ class VOID_Plugin implements Typecho_Plugin_Interface
         // 创建字段
         if (!array_key_exists('likes', $db->fetchRow($db->select()->from('table.contents'))))
             $db->query('ALTER TABLE `'. $prefix .'contents` ADD COLUMN `likes` INT(10) DEFAULT 0;');
-        Helper::addAction('void_vote', 'VOID_Action');
-
+        
         /** 评论赞踩 */
         // 创建字段
         if (!array_key_exists('likes', $db->fetchRow($db->select()->from('table.comments'))))
             $db->query('ALTER TABLE `'. $prefix .'comments` ADD COLUMN `likes` INT(10) DEFAULT 0;');
         if (!array_key_exists('dislikes', $db->fetchRow($db->select()->from('table.comments'))))
             $db->query('ALTER TABLE `'. $prefix .'comments` ADD COLUMN `dislikes` INT(10) DEFAULT 0;');
+
+        // 添加投票路由，文章与评论
+        Helper::addAction('void_vote', 'VOID_Action');
 
         /** 浏览量统计相关 */
         // 创建字段
@@ -71,6 +73,27 @@ class VOID_Plugin implements Typecho_Plugin_Interface
         Typecho_Plugin::factory('Widget_Archive')->___viewsNum = array('VOID_Plugin', 'viewsNum');
         Typecho_Plugin::factory('Widget_Archive')->___likes = array('VOID_Plugin', 'likes');
         Typecho_Plugin::factory('Widget_Archive')->___wordCount = array('VOID_Plugin', 'wordCount');
+
+        // 创建表，保存点赞与投票相关信息
+        $table_name = $prefix . 'votes';
+        $sql = "SHOW TABLES LIKE '%" . $table_name . "%'";
+
+        try {
+            if (count($db->fetchAll($sql)) == 0) {
+                $sql = 'create table `'.$table_name.'` (
+                    `vid` int unsigned auto_increment,
+                    `id` int unsigned not null,
+                    `table` char(32) not null,
+                    `type` char(32) not null,
+                    `agent` text,
+                    `ip` text,
+                    primary key (`vid`)
+                ) default charset=utf8';
+                $db->query($sql);
+            }
+        } catch (Typecho_Db_Query_Exception $th) {
+            throw new Typecho_Plugin_Exception($th->getMessage());
+        }
     }
 
     /**
