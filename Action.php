@@ -84,7 +84,8 @@ class VOID_Action extends Typecho_Widget implements Widget_Interface_Do
                     'table' => $table,
                     'type' => $this->body['type'],
                     'agent' => $_SERVER['HTTP_USER_AGENT'],
-                    'ip' => $ip
+                    'ip' => $ip,
+                    'created' => time()
                 )));
 
                 echo json_encode(array(

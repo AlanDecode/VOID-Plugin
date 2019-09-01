@@ -87,6 +87,7 @@ class VOID_Plugin implements Typecho_Plugin_Interface
                     `type` char(32) not null,
                     `agent` text,
                     `ip` varchar(128),
+                    `created` int unsigned default 0,
                     primary key (`vid`)
                 ) default charset=utf8;
                 CREATE INDEX index_ip ON '.$table_name.'(`ip`);
@@ -96,6 +97,10 @@ class VOID_Plugin implements Typecho_Plugin_Interface
                 $sqls = explode(';', $sql);
                 foreach ($sqls as $sql) {
                     $db->query($sql);
+                }
+            } else {
+                if (!array_key_exists('created', $db->fetchRow($db->select()->from('table.votes')))) {
+                    $db->query('ALTER TABLE `'. $prefix .'votes` ADD COLUMN `created` INT(10) DEFAULT 0;');
                 }
             }
         } catch (Typecho_Db_Query_Exception $th) {
