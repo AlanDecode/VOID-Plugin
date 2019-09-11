@@ -54,9 +54,6 @@ class VOID_Plugin implements Typecho_Plugin_Interface
         if (!array_key_exists('dislikes', $db->fetchRow($db->select()->from('table.comments'))))
             $db->query('ALTER TABLE `'. $prefix .'comments` ADD COLUMN `dislikes` INT(10) DEFAULT 0;');
 
-        // 添加投票路由，文章与评论
-        Helper::addAction('void_vote', 'VOID_Action');
-
         /** 浏览量统计相关 */
         // 创建字段
         if (!array_key_exists('viewsNum', $db->fetchRow($db->select()->from('table.contents'))))
@@ -106,6 +103,14 @@ class VOID_Plugin implements Typecho_Plugin_Interface
         } catch (Typecho_Db_Query_Exception $th) {
             throw new Typecho_Plugin_Exception($th->getMessage());
         }
+
+        /**
+         * 添加一个面板，展示互动信息，例如评论赞踩、文章点赞
+         */
+        Helper::addPanel(3, 'VOID/pages/showActivity.php', '互动', '查看访客互动', 'administrator');
+
+        // 添加投票路由，文章与评论
+        Helper::addAction('void_vote', 'VOID_Action');
     }
 
     /**
@@ -118,7 +123,8 @@ class VOID_Plugin implements Typecho_Plugin_Interface
      */
     public static function deactivate()
 	{
-        Helper::removeAction("void_vote");
+        Helper::removeAction('void_vote');
+        Helper::removePanel(3, 'VOID/pages/showActivity.php');
     }
     
     /**

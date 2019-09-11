@@ -4,6 +4,40 @@
  *
  * @author AlanDecode | 熊猫小A
  */
+require_once 'libs/IP.php';
+require_once 'libs/ParseAgent.php';
+
+/**
+ * 根据ID获取单个Widget对象
+ *
+ * @param string $table 表名, 支持 contents, comments, metas, users
+ * @return Widget_Abstract
+ */
+function widgetById($table, $pkId)
+{
+    $table = ucfirst($table);
+    if (!in_array($table, array('Contents', 'Comments', 'Metas', 'Users'))) {
+        return NULL;
+    }
+
+    $keys = array(
+        'Contents'  =>  'cid',
+        'Comments'  =>  'coid',
+        'Metas'     =>  'mid',
+        'Users'     =>  'uid'
+    );
+
+    $className = "Widget_Abstract_{$table}";
+    $key = $keys[$table];
+    $db = Typecho_Db::get();
+    $widget = new $className(Typecho_Request::getInstance(), Typecho_Widget_Helper_Empty::getInstance());
+    
+    $db->fetchRow(
+        $widget->select()->where("{$key} = ?", $pkId)->limit(1),
+            array($widget, 'push'));
+
+    return $widget;
+}
 
 class VOID_Action extends Typecho_Widget implements Widget_Interface_Do
 {
@@ -14,6 +48,7 @@ class VOID_Action extends Typecho_Widget implements Widget_Interface_Do
 
         $this->on($this->request->is('content'))->vote_content();
         $this->on($this->request->is('comment'))->vote_comment();
+        $this->on($this->request->is('show'))->vote_show();
 
         //$this->response->goBack();
     }
@@ -30,6 +65,75 @@ class VOID_Action extends Typecho_Widget implements Widget_Interface_Do
     private function vote_content()
     {
         $this->vote_excute('contents', 'cid', $this->body['id'], 'likes', 'up');
+    }
+
+    private function vote_show ()
+    {
+        $db = Typecho_Db::get();
+        $pageSize = 10;
+
+        Typecho_Widget::widget('Widget_User')->to($user);
+        if (!$user->have() || !$user->hasLogin()) {
+            echo 'Invalid Request';
+            exit;
+        }
+
+        header("Content-type:application/json");
+        $older_than = null;
+        if (array_key_exists('older_than', $_GET))
+            $older_than = $_GET['older_than'];
+        
+        $query = $db->select()
+                    ->from('table.votes')
+                    ->order('table.votes.created', Typecho_Db::SORT_DESC)
+                    ->limit($pageSize);
+        if ($older_than)
+            $query = $query->where('table.votes.created < ?', $older_than);
+        
+        $rows = $db->fetchAll($query);
+
+        if (!count($rows)) {
+            echo json_encode(array(
+                'stamp' => -1,
+                'data' => array()
+            ));
+            exit;
+        }
+
+        $arr = array(
+            'stamp' => $rows[count($rows) - 1]['created'],
+            'data' => array()
+        );
+        foreach ($rows as $row) {
+            $instance = widgetById($row['table'], $row['id']);
+            if (!$instance->have()) continue;
+
+            $content = '';
+            if ($row['table'] == 'comments') {
+                $content = $instance->content;
+                $content = Typecho_Common::stripTags($content);
+                $content = mb_substr($content, 0, 12);
+                $content .= '...';
+            } else {
+                $content = $instance->title;
+            }
+
+            $item = array(
+                'vid' => $row['vid'],
+                'url' => $instance->permalink,
+                'from' => $row['table'],
+                'content' => $content,
+                'type' => $row['type'],
+                'created' => $row['created'],
+                'created_format' => date('Y-m-d H:i', $row['created']),
+                'os' => ParseAgent::getOs($row['agent']),
+                'browser' => ParseAgent::getBrowser($row['agent']),
+                'location' => str_replace('中国', '', IPLocation_IP::locate($row['ip']))
+            );
+            $arr['data'][] = $item;
+        }
+
+        echo json_encode($arr);
     }
 
     private function vote_excute($table, $key, $id, $field, $type)
