@@ -10,7 +10,7 @@ class ParseAgent
         'IE' => '<i class="bi bi-ie"></i>',
         'Safari' => '<i class="bi bi-safari"></i>',
         'Chrome' => '<i class="bi bi-chrome"></i>',
-        'Firefox' => '<i class="bi bi-firefoc"></i>',
+        'FireFox' => '<i class="bi bi-firefox"></i>',
         'Edge' => '<i class="bi bi-edge"></i>',
         'Opera' => '<i class="bi bi-opera"></i>',
         'Unkown' => '<i class="bi bi-unknown"></i>'
