@@ -15,7 +15,7 @@ window.loadMoreActivity = function () {
         'contents': '文章'
     };
 
-    var template =  '<li class="vote" data-icon="{icon}">' + 
+    var template =  '<li class="vote {fr} {cl}">' + 
                         '<div class="vote-inner">{from}「<a href="{url}" target="_blank">{content}</a>」收获了一个{type}。' + 
                             '<span class="meta">' + 
                                 '<span class="misc">{misc}</span>' +
@@ -33,19 +33,11 @@ window.loadMoreActivity = function () {
         }
 
         $.each(data.data, function (i, item) {
-            var icon = '';
-            if (item.from == 'comments') {
-                if (item.type == 'up')
-                    icon = '👍';
-                else
-                    icon = '👎';
-            } else {
-                icon = '❤️';
-            }
-
             var type = item.type == 'up' ? '赞' : '踩';
 
-            var html = template.replace('{icon}', icon)
+            var html = template
+                .replace('{cl}', item.type)
+                .replace('{fr}', item.from)
                 .replace('{type}', type)
                 .replace('{from}', from[item.from])
                 .replace('{url}', item.url)
