@@ -10,6 +10,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
  */
 
 require_once('libs/WordCount.php');
+require_once('libs/IP.php');
 
 class VOID_Plugin implements Typecho_Plugin_Interface
 {
@@ -111,6 +112,9 @@ class VOID_Plugin implements Typecho_Plugin_Interface
 
         // 添加投票路由，文章与评论
         Helper::addAction('void_vote', 'VOID_Action');
+
+        // 评论列表显示来源
+        Typecho_Plugin::factory('Widget_Comments_Admin')->callIp = array('VOID_Plugin', 'commentLocation');
     }
 
     /**
@@ -224,5 +228,18 @@ class VOID_Plugin implements Typecho_Plugin_Interface
                 Typecho_Cookie::set('__void_post_views', $views); //记录查看cookie
             }
         }
+    }
+
+    /**
+     * 插件实现方法
+     * 
+     * @access public
+     * @param Typecho_Widget $comments 评论
+     * @return void
+     */
+    public static function commentLocation($comments)
+    {
+        $location = IPLocation_IP::locate($comments->ip);
+        echo $comments->ip . '<br>' . $location;
     }
 }
