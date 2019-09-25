@@ -11,6 +11,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 
 require_once('libs/WordCount.php');
 require_once('libs/IP.php');
+require_once('libs/ParseImg.php');
 
 class VOID_Plugin implements Typecho_Plugin_Interface
 {
@@ -33,15 +34,11 @@ class VOID_Plugin implements Typecho_Plugin_Interface
         // contents 表中若无 wordCount 字段则添加
         if (!array_key_exists('wordCount', $db->fetchRow($db->select()->from('table.contents'))))
             $db->query('ALTER TABLE `'. $prefix .'contents` ADD COLUMN `wordCount` INT(10) DEFAULT 0;');
-        // 删除以前创建的沙雕字段
-        if(preg_match('/mysql/i', $adapterName)) {
-            if (array_key_exists('wordCountTime', $db->fetchRow($db->select()->from('table.contents'))))
-                $db->query('ALTER TABLE `'. $prefix .'contents` DROP COLUMN `wordCountTime`;');
-        }
         // 更新一次字数统计
         VOID_WordCount::updateAllWordCount();
         // 注册 hook
-        Typecho_Plugin::factory('Widget_Contents_Post_Edit')->finishPublish = array('VOID_Plugin', 'updateWordCount');
+        Typecho_Plugin::factory('Widget_Contents_Post_Edit')->finishPublish = array('VOID_Plugin', 'updateContent');
+        Typecho_Plugin::factory('Widget_Contents_Page_Edit')->finishPublish = array('VOID_Plugin', 'updateContent');
 
         /** 点赞相关 */
         // 创建字段
@@ -59,11 +56,6 @@ class VOID_Plugin implements Typecho_Plugin_Interface
         // 创建字段
         if (!array_key_exists('viewsNum', $db->fetchRow($db->select()->from('table.contents'))))
             $db->query('ALTER TABLE `'. $prefix .'contents` ADD COLUMN `viewsNum` INT(10) DEFAULT 0;');
-        // 删除以前创建的沙雕字段
-        // if(preg_match('/mysql/i', $adapterName)) {
-        //     if (array_key_exists('views', $db->fetchRow($db->select()->from('table.contents'))))
-        //         $db->query('ALTER TABLE `'. $prefix .'contents` DROP COLUMN `views`;');
-        // }
         //增加浏览数
         Typecho_Plugin::factory('Widget_Archive')->beforeRender = array('VOID_Plugin', 'updateViewCount');
 
@@ -195,9 +187,10 @@ class VOID_Plugin implements Typecho_Plugin_Interface
      * @param  mixed $archive
      * @return void
      */
-    public static function updateWordCount($contents, $widget)
+    public static function updateContent($contents, $widget)
     {
         VOID_WordCount::wordCountByCid($widget->cid);
+        VOID_ParseImgInfo::parse($widget->cid);
     }
 
     /**

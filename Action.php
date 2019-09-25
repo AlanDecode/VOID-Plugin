@@ -6,6 +6,8 @@
  */
 require_once 'libs/IP.php';
 require_once 'libs/ParseAgent.php';
+require_once 'libs/ParseImg.php';
+
 
 /**
  * 根据ID获取单个Widget对象
@@ -49,8 +51,78 @@ class VOID_Action extends Typecho_Widget implements Widget_Interface_Do
         $this->on($this->request->is('content'))->vote_content();
         $this->on($this->request->is('comment'))->vote_comment();
         $this->on($this->request->is('show'))->vote_show();
-
+        $this->on($this->request->is('getimginfo'))->void_img_info();
+        $this->on($this->request->is('cleanimginfo'))->void_clean_img_info();
+        
         //$this->response->goBack();
+    }
+
+    // 清理图片长宽信息，替换 src
+    private function void_clean_img_info()
+    {
+        // 要求先登录
+        Typecho_Widget::widget('Widget_User')->to($user);
+        if (!$user->have() || !$user->hasLogin()) {
+            echo 'Invalid Request';
+            exit;
+        }
+
+        $db = Typecho_Db::get();
+
+        // 文章内容
+        $rows = $db->fetchAll($db->select('cid')
+            ->from('table.contents')
+            ->where('type = ?', 'post')
+            ->orWhere('type = ?', 'page'));
+        
+        echo '共 ' .count($rows). ' 篇文章<br>'.PHP_EOL;
+
+        for ($index=0; $index < count($rows); $index++) { 
+            $row = $rows[$index];
+            $ret = VOID_ParseImgInfo::clean($row['cid']);
+
+            echo '第 '.($index+1).' 篇文章...共清理 '.$ret.' 张图片<br>'.PHP_EOL;
+        }
+    }
+
+    // 为图片获取长宽信息，并替换原src
+    private function void_img_info()
+    {
+        // 要求先登录
+        Typecho_Widget::widget('Widget_User')->to($user);
+        if (!$user->have() || !$user->hasLogin()) {
+            echo 'Invalid Request';
+            exit;
+        }
+
+        $db = Typecho_Db::get();
+
+        // 文章内容
+        $rows = $db->fetchAll($db->select('cid')
+            ->from('table.contents')
+            ->where('type = ?', 'post')
+            ->orWhere('type = ?', 'page'));
+        
+        echo '共 ' .count($rows). ' 篇文章<br>'.PHP_EOL;
+
+        $total = 0;
+        for ($index=0; $index < count($rows); $index++) { 
+            $row = $rows[$index];
+            $ret = VOID_ParseImgInfo::parse($row['cid']);
+
+            echo '第 '.($index+1).' 篇文章处理完毕<br>'.PHP_EOL;
+
+            $total += $ret[1];
+            if ($total >= 10) {
+                echo '本次共处理 '.$total.' 张图片。';
+                if ($index+1 < count($rows)) {
+                    echo '尚未处理完成，请刷新再次处理。<br>';
+                } else {
+                    echo '所有文章均处理完成。<br>';
+                }
+                exit;
+            }
+        }
     }
 
     private function vote_comment()
