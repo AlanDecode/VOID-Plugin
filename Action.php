@@ -73,7 +73,8 @@ class VOID_Action extends Typecho_Widget implements Widget_Interface_Do
         $rows = $db->fetchAll($db->select('cid')
             ->from('table.contents')
             ->where('type = ?', 'post')
-            ->orWhere('type = ?', 'page'));
+            ->orWhere('type = ?', 'page')
+            ->order('created', Typecho_Db::SORT_DESC)); // 从最近的开始
         
         echo '共 ' .count($rows). ' 篇文章<br>'.PHP_EOL;
 
@@ -101,7 +102,8 @@ class VOID_Action extends Typecho_Widget implements Widget_Interface_Do
         $rows = $db->fetchAll($db->select('cid')
             ->from('table.contents')
             ->where('type = ?', 'post')
-            ->orWhere('type = ?', 'page'));
+            ->orWhere('type = ?', 'page')
+            ->order('created', Typecho_Db::SORT_DESC)); // 从最近的开始
         
         echo '共 ' .count($rows). ' 篇文章<br>'.PHP_EOL;
 
