@@ -5,7 +5,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
  * 
  * @package VOID
  * @author 熊猫小A
- * @version 1.1
+ * @version 1.2
  * @link https://blog.imalan.cn
  */
 
@@ -15,7 +15,7 @@ require_once('libs/ParseImg.php');
 
 class VOID_Plugin implements Typecho_Plugin_Interface
 {
-    public static $VERSION = 1.1;
+    public static $VERSION = 1.2;
 
     /**
      * 激活插件方法,如果激活失败,直接抛出异常
