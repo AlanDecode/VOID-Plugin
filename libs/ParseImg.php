@@ -31,7 +31,6 @@ Class VOID_ParseImgInfo
         $result = array(0, 0, 0, 0);
         $result[0] = count($imgArr);
         
-        $changed = false;
         foreach ($imgArr as $v) {
             $src = $v->getAttr('src');
             if (strpos($src, 'vwid') != false) {
@@ -49,16 +48,11 @@ Class VOID_ParseImgInfo
             echo $src .' => '. $src_new.'<br>'.PHP_EOL;
 
             // 更新原文章数据
-            $changed = true;
             $content = str_replace($src, $src_new, $content);
-            $result[1]++;
-        }
-
-        // 更新数据库
-        if ($changed) {
             $db->query($db->update('table.contents')
                 ->rows(array('text' => $content))
                 ->where('cid = ?',  $cid));
+            $result[1]++;
         }
 
         return $result;
@@ -98,27 +92,33 @@ Class VOID_ParseImgInfo
      */
     public static function GetImageSize($url) 
     {
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 5);
-        curl_setopt($ch, CURLOPT_RANGE, '0-167');
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+        error_reporting(0);
+        $meta = getimagesize($url);
+        if ($meta == false) return false;
 
-        $dataBlock = curl_exec($ch);
-        curl_close($ch);
+        return array('width'=>$meta[0],'height'=>$meta[1]);
 
-        if (! $dataBlock) return false;
+        // $ch = curl_init($url);
+        // curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+        // curl_setopt($ch, CURLOPT_RANGE, '0-167');
+        // curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+        // curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        // curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        // curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+
+        // $dataBlock = curl_exec($ch);
+        // curl_close($ch);
+
+        // if (! $dataBlock) return false;
     
-        $size = getimagesize('data://image/jpeg;base64,'. base64_encode($dataBlock));
-        if (empty($size)) {
-            return false;
-        }
+        // $size = getimagesize('data://image/jpeg;base64,'. base64_encode($dataBlock));
+        // if (empty($size)) {
+        //     return false;
+        // }
     
-        $result['width'] = $size[0];
-        $result['height'] = $size[1];
+        // $result['width'] = $size[0];
+        // $result['height'] = $size[1];
     
-        return $result;
+        // return $result;
     }
 }

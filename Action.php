@@ -108,6 +108,8 @@ class VOID_Action extends Typecho_Widget implements Widget_Interface_Do
         echo '共 ' .count($rows). ' 篇文章<br>'.PHP_EOL;
 
         $total = 0;
+        $bad = 0;
+        $jump = 0;
         for ($index=0; $index < count($rows); $index++) { 
             $row = $rows[$index];
             $ret = VOID_ParseImgInfo::parse($row['cid']);
@@ -115,16 +117,18 @@ class VOID_Action extends Typecho_Widget implements Widget_Interface_Do
             echo '第 '.($index+1).' 篇文章处理完毕<br>'.PHP_EOL;
 
             $total += $ret[1];
+            $jump += $ret[2];
+            $bad += $ret[3];
             if ($total >= 10) {
-                echo '本次共处理 '.$total.' 张图片。';
+                echo '本次共解析 '.$total.' 张图片，跳过 '.$jump.' 张图片。'.$bad.' 张图片处理失败。';
                 if ($index+1 < count($rows)) {
                     echo '尚未处理完成，请刷新再次处理。<br>';
-                } else {
-                    echo '所有文章均处理完成。<br>';
                 }
                 exit;
             }
         }
+        echo '所有文章均处理完成。<br>';
+        echo '本次共解析 '.$total.' 张图片，跳过 '.$jump.' 张图片。'.$bad.' 张图片处理失败。';
     }
 
     private function vote_comment()

@@ -29,7 +29,7 @@ include 'common-js.php'
 ?>
 
 <script>
-window.queryActivityUrl = "<?php Helper::options()->index('/action/void_vote?show'); ?>";
+window.queryActivityUrl = "<?php Helper::options()->index('/action/void?show'); ?>";
 </script>
 <script src="<?php Helper::options()->pluginUrl('VOID/pages/votes.02.js') ?>"></script>
 

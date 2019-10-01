@@ -103,7 +103,7 @@ class VOID_Plugin implements Typecho_Plugin_Interface
         Helper::addPanel(3, 'VOID/pages/showActivity.php', '互动', '查看访客互动', 'administrator');
 
         // 添加投票路由，文章与评论
-        Helper::addAction('void_vote', 'VOID_Action');
+        Helper::addAction('void', 'VOID_Action');
 
         // 评论列表显示来源
         Typecho_Plugin::factory('Widget_Comments_Admin')->callIp = array('VOID_Plugin', 'commentLocation');
@@ -119,7 +119,7 @@ class VOID_Plugin implements Typecho_Plugin_Interface
      */
     public static function deactivate()
 	{
-        Helper::removeAction('void_vote');
+        Helper::removeAction('void');
         Helper::removePanel(3, 'VOID/pages/showActivity.php');
     }
     
