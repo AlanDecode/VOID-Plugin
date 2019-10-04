@@ -26,10 +26,20 @@ class VOID_Plugin implements Typecho_Plugin_Interface
      */
     public static function activate()
     {
+        // 检查数据库类型
         $db = Typecho_Db::get();
-        $prefix = $db->getPrefix();
         $adapterName =  strtolower($db->getAdapterName());
+        if (strpos($adapterName, 'mysql') < 0) {
+            throw new Typecho_Plugin_Exception('启用失败，本插件暂时只支持 MySQL 数据库，您的数据库是：'.$adapterName);
+        }
 
+        // 检查是否存在对应扩展
+        if (!extension_loaded('openssl')) {
+            throw new Typecho_Plugin_Exception('启用失败，PHP 未启用 OpenSSL 扩展。');
+        }
+
+        $prefix = $db->getPrefix();
+        
         /** 字数统计相关 */
         // contents 表中若无 wordCount 字段则添加
         if (!array_key_exists('wordCount', $db->fetchRow($db->select()->from('table.contents'))))
