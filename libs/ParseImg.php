@@ -23,8 +23,14 @@ Class VOID_ParseImgInfo
                 ->from('table.contents')
                 ->where('cid = ?', $cid));
         $content = $content['text'];
+
+        $html = '';
+        if (0 === strpos($content, '<!--html-->')) {
+            $html = $content;
+        } else {
+            $html = Markdown::convert($content);
+        }
         
-        $html = Markdown::convert($content);
         $doc = new \HtmlParser\ParserDom($html);
         $imgArr = $doc->find("img");
 
@@ -33,7 +39,8 @@ Class VOID_ParseImgInfo
         
         foreach ($imgArr as $v) {
             $src = $v->getAttr('src');
-            if (strpos($src, 'vwid') != false) {
+
+            if (strpos($src, 'vwid') !== false) {
                 $result[2]++;
                 continue; // 已经处理过该图片
             }
@@ -94,31 +101,34 @@ Class VOID_ParseImgInfo
     {
         error_reporting(0);
         $meta = getimagesize($url);
-        if ($meta == false) return false;
+        if ($meta == false) {
+            // 尝试另一种方式
+            $meta = self::GetImageSizeCURL($url);
+            if ($meta == false) return false;
+        }
 
         return array('width'=>$meta[0],'height'=>$meta[1]);
+    }
 
-        // $ch = curl_init($url);
-        // curl_setopt($ch, CURLOPT_TIMEOUT, 5);
-        // curl_setopt($ch, CURLOPT_RANGE, '0-167');
-        // curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-        // curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        // curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-        // curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+    /**
+     * 通过 CURL 方式获取
+     */
+    private static function GetImageSizeCURL($url)
+    {
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+        curl_setopt($ch, CURLOPT_RANGE, '0-167');
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_REFERER, Helper::options()->siteUrl);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 
-        // $dataBlock = curl_exec($ch);
-        // curl_close($ch);
+        $dataBlock = curl_exec($ch);
+        curl_close($ch);
 
-        // if (! $dataBlock) return false;
-    
-        // $size = getimagesize('data://image/jpeg;base64,'. base64_encode($dataBlock));
-        // if (empty($size)) {
-        //     return false;
-        // }
-    
-        // $result['width'] = $size[0];
-        // $result['height'] = $size[1];
-    
-        // return $result;
+        if (!$dataBlock) return false;
+
+        return getimagesize('data://image/jpeg;base64,'. base64_encode($dataBlock));
     }
 }

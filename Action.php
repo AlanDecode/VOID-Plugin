@@ -52,9 +52,24 @@ class VOID_Action extends Typecho_Widget implements Widget_Interface_Do
         $this->on($this->request->is('comment'))->vote_comment();
         $this->on($this->request->is('show'))->vote_show();
         $this->on($this->request->is('getimginfo'))->void_img_info();
+        $this->on($this->request->is('getsingleimginfo'))->void_single_img_info();
         $this->on($this->request->is('cleanimginfo'))->void_clean_img_info();
         
         //$this->response->goBack();
+    }
+
+    // 为图片获取长宽信息，并替换原src
+    private function void_single_img_info()
+    {
+        // 要求先登录
+        Typecho_Widget::widget('Widget_User')->to($user);
+        if (!$user->have() || !$user->hasLogin()) {
+            echo 'Invalid Request';
+            exit;
+        }
+        
+        $cid = $_GET['cid'];
+        print_r(VOID_ParseImgInfo::parse($cid));
     }
 
     // 清理图片长宽信息，替换 src
