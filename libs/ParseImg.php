@@ -6,7 +6,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
  * @author AlanDecode | 熊猫小A
  */
 
-require_once 'ParserDom.php';
+require_once 'simple_html_dom.php';
 
 Class VOID_ParseImgInfo
 {
@@ -30,15 +30,14 @@ Class VOID_ParseImgInfo
         } else {
             $html = Markdown::convert($content);
         }
-        
-        $doc = new \HtmlParser\ParserDom($html);
-        $imgArr = $doc->find("img");
+
+        $doc = str_get_html($html);
+        $imgArr = $doc->find('img');
 
         $result = array(0, 0, 0, 0);
         $result[0] = count($imgArr);
-        
         foreach ($imgArr as $v) {
-            $src = $v->getAttr('src');
+            $src = $v->src;
 
             if (strpos($src, 'vwid') !== false) {
                 $result[2]++;
