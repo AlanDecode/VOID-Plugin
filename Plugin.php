@@ -19,12 +19,8 @@ class VOID_Plugin implements Typecho_Plugin_Interface
 
     private static function hasColumn($table, $field) {
         $db = Typecho_Db::get();
-
-        $row = $db->fetchRow($db->select('count(*)')->from('information_schema.columns')
-            ->where('table_name = ?', $table)
-            ->where('column_name = ?', $field));
-
-        return boolval($row['count(*)']);
+        $sql = "SHOW COLUMNS FROM `".$table."` LIKE '%".$field."%'";
+        return count($db->fetchAll($sql)) != 0;
     }
 
     private static function hasTable($table) {
