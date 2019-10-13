@@ -59,6 +59,9 @@ class VOID_Plugin implements Typecho_Plugin_Interface
         if (!extension_loaded('openssl')) {
             throw new Typecho_Plugin_Exception('启用失败，PHP 需启用 OpenSSL 扩展。');
         }
+
+        /** 图片附件尺寸解析，注册 hook */
+        Typecho_Plugin::factory('Widget_Upload')->upload = array('VOID_Plugin', 'upload');
         
         /** 字数统计 */
         // contents 表中若无 wordCount 字段则添加
@@ -249,6 +252,25 @@ class VOID_Plugin implements Typecho_Plugin_Interface
                 array_push($views, $cid);
                 $views = implode(',', $views);
                 Typecho_Cookie::set('__void_post_views', $views); //记录查看cookie
+            }
+        }
+    }
+
+    /**
+     * 在附件链接尾部添加后缀
+     * 
+     * @access public
+     * @param  Widget_Upload $uploadObj 上传对象
+     * @return void
+     */
+    public static function upload($uploadObj)
+    {
+        // 若是图片，则增加后缀
+        if ($uploadObj->attachment->isImage) {
+            $meta = getimagesize(__TYPECHO_ROOT_DIR__.$uploadObj->attachment->path);
+            if ($meta != false) {
+                $uploadObj->attachment->url = 
+                    $uploadObj->attachment->url.'#vwid='.$meta[0].'&vhei='.$meta[1];
             }
         }
     }
