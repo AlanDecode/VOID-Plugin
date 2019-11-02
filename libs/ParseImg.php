@@ -34,6 +34,9 @@ Class VOID_ParseImgInfo
         $doc = str_get_html($html);
         $imgArr = $doc->find('img');
 
+        $limit = Helper::options()->plugin('VOID')->parseImgLimit;
+        if (empty($limit)) $limit = 10;
+
         $result = array(0, 0, 0, 0);
         $result[0] = count($imgArr);
         foreach ($imgArr as $v) {
@@ -60,7 +63,7 @@ Class VOID_ParseImgInfo
                 ->where('cid = ?',  $cid));
             $result[1]++;
 
-            if (++$GLOBALS['ImgParsed'] >= 10)
+            if (++$GLOBALS['ImgParsed'] >= $limit)
                 return $result;
         }
 

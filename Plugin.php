@@ -164,8 +164,11 @@ class VOID_Plugin implements Typecho_Plugin_Interface
      * @return void
      */
     public static function config(Typecho_Widget_Helper_Form $form)
-	{
-		
+    {
+        // 可设置每次获取图片基础信息数量上限
+        $parseImgLimit = new Typecho_Widget_Helper_Form_Element_Text('parseImgLimit', NULL, '10', _t('单次图片处理数量上限'), 
+            _t('这里是每次获取图片基础信息的数量上限。不建议设置过大的数值，太大可能导致处理超时。'));
+        $form->addInput($parseImgLimit);
     }
     
     /**
@@ -223,11 +226,7 @@ class VOID_Plugin implements Typecho_Plugin_Interface
     public static function updateContent($contents, $widget)
     {
         VOID_WordCount::wordCountByCid($widget->cid);
-
         $ret = VOID_ParseImgInfo::parse($widget->cid);
-        if ($ret[0] != ($ret[1] + $ret[2] + $ret[3])) {
-            return '本文图片较多，本次未全部处理完成。可再次点击发布继续处理。';
-        }
     }
 
     /**

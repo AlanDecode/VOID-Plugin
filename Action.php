@@ -124,6 +124,9 @@ class VOID_Action extends Typecho_Widget implements Widget_Interface_Do
         
         echo '共 ' .count($rows). ' 篇文章<br>'.PHP_EOL;
 
+        $limit = Helper::options()->plugin('VOID')->parseImgLimit;
+        if (empty($limit)) $limit = 10;
+
         $total = 0; // 所有的图片数
         $success = 0; // 解析成功的图片数
         $bad = 0; // 解析失败的图片数
@@ -140,7 +143,7 @@ class VOID_Action extends Typecho_Widget implements Widget_Interface_Do
             $jump += $ret[2];
             $bad += $ret[3];
 
-            if ($GLOBALS['ImgParsed'] >= 10)
+            if ($GLOBALS['ImgParsed'] >= $limit)
                 break;
         }
 
