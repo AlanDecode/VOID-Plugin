@@ -223,7 +223,11 @@ class VOID_Plugin implements Typecho_Plugin_Interface
     public static function updateContent($contents, $widget)
     {
         VOID_WordCount::wordCountByCid($widget->cid);
-        VOID_ParseImgInfo::parse($widget->cid);
+
+        $ret = VOID_ParseImgInfo::parse($widget->cid);
+        if ($ret[0] != ($ret[1] + $ret[2] + $ret[3])) {
+            return '本文图片较多，本次未全部处理完成。可再次点击发布继续处理。';
+        }
     }
 
     /**

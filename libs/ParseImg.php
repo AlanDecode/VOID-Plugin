@@ -59,6 +59,9 @@ Class VOID_ParseImgInfo
                 ->rows(array('text' => $content))
                 ->where('cid = ?',  $cid));
             $result[1]++;
+
+            if (++$GLOBALS['ImgParsed'] >= 10)
+                return $result;
         }
 
         return $result;

@@ -41,6 +41,8 @@ function widgetById($table, $pkId)
     return $widget;
 }
 
+$GLOBALS['ImgParsed'] = 0;
+
 class VOID_Action extends Typecho_Widget implements Widget_Interface_Do
 {
     private $body = null;
@@ -122,28 +124,34 @@ class VOID_Action extends Typecho_Widget implements Widget_Interface_Do
         
         echo '共 ' .count($rows). ' 篇文章<br>'.PHP_EOL;
 
-        $total = 0;
-        $bad = 0;
+        $total = 0; // 所有的图片数
+        $success = 0; // 解析成功的图片数
+        $bad = 0; // 解析失败的图片数
         $jump = 0;
-        for ($index=0; $index < count($rows); $index++) { 
+        $index = 0;
+        for (; $index < count($rows); $index++) { 
+            echo '开始处理第 '.($index+1).' 篇文章...<br>'.PHP_EOL;
+
             $row = $rows[$index];
             $ret = VOID_ParseImgInfo::parse($row['cid']);
 
-            echo '第 '.($index+1).' 篇文章处理完毕<br>'.PHP_EOL;
-
-            $total += $ret[1];
+            $total += $ret[0];
+            $success += $ret[1];
             $jump += $ret[2];
             $bad += $ret[3];
-            if ($total >= 10) {
-                echo '本次共解析 '.$total.' 张图片，跳过 '.$jump.' 张图片。'.$bad.' 张图片处理失败。';
-                if ($index+1 < count($rows)) {
-                    echo '尚未处理完成，请刷新再次处理。<br>';
-                }
-                exit;
-            }
+
+            if ($GLOBALS['ImgParsed'] >= 10)
+                break;
         }
-        echo '所有文章均处理完成。<br>';
-        echo '本次共解析 '.$total.' 张图片，跳过 '.$jump.' 张图片。'.$bad.' 张图片处理失败。';
+
+        // 输出本次处理情况
+        echo '本次共解析 '.$success.' 张图片，跳过 '.$jump.' 张图片。'.$bad.' 张图片处理失败。<br>';
+
+        // 若全部处理完成
+        if ($total == ($success + $jump + $bad))
+            echo '处理完毕。<br>';
+        else
+            echo '解析尚未完成，请刷新继续处理...<br>';
     }
 
     private function vote_comment()
