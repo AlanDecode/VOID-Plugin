@@ -34,10 +34,10 @@ class IPLocation_IP
         $max_comp_len = self::$offset['len'] - 1024 - 4;
         for ($start = $start['len'] * 8 + 1024; $start < $max_comp_len; $start += 8)
         {
-            if (self::$index{$start} . self::$index{$start + 1} . self::$index{$start + 2} . self::$index{$start + 3} >= $nip2)
+            if (self::$index[$start] . self::$index[$start + 1] . self::$index[$start + 2] . self::$index[$start + 3] >= $nip2)
             {
-                $index_offset = unpack('Vlen', self::$index{$start + 4} . self::$index{$start + 5} . self::$index{$start + 6} . "\x0");
-                $index_length = unpack('Clen', self::$index{$start + 7});
+                $index_offset = unpack('Vlen', self::$index[$start + 4] . self::$index[$start + 5] . self::$index[$start + 6] . "\x0");
+                $index_length = unpack('Clen', self::$index[$start + 7]);
                 break;
             }
         }
