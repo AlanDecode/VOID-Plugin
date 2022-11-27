@@ -79,8 +79,8 @@ class IPLocation_IP
     {
         $addresses = IPLocation_IP::find($ip);
         $address = 'unknown';
-
-        if (!empty($addresses)) {
+        
+        if (!empty($addresses) && $addresses!= 'N/A') {
             $addresses = array_unique($addresses);
             $address = implode('', $addresses);
         }
