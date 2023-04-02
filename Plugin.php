@@ -5,7 +5,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
  * 
  * @package VOID
  * @author 熊猫小A
- * @version 1.2
+ * @version 1.2.1
  * @link https://blog.imalan.cn
  */
 
@@ -15,7 +15,7 @@ require_once('libs/ParseImg.php');
 
 class VOID_Plugin implements Typecho_Plugin_Interface
 {
-    public static $VERSION = 1.2;
+    public static $VERSION = 1.2.1;
 
     private static function hasColumn($table, $field) {
         $db = Typecho_Db::get();
