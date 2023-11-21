@@ -19,13 +19,13 @@ class VOID_Plugin implements Typecho_Plugin_Interface
 
     private static function hasColumn($table, $field) {
         $db = Typecho_Db::get();
-        $sql = "SHOW COLUMNS FROM `".$table."` LIKE '%".$field."%'";
+        $sql = "SELECT column_name FROM information_schema.columns WHERE table_name = '".$table."' AND column_name = '".$field."'";
         return count($db->fetchAll($sql)) != 0;
     }
 
     private static function hasTable($table) {
         $db = Typecho_Db::get();
-        $sql = "SHOW TABLES LIKE '%".$table."%'";
+        $sql = "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = '".$table."')";
         return count($db->fetchAll($sql)) != 0;
     }
 
@@ -51,8 +51,8 @@ class VOID_Plugin implements Typecho_Plugin_Interface
         $db = Typecho_Db::get();
         $prefix = $db->getPrefix();
         $adapterName =  strtolower($db->getAdapterName());
-        if (strpos($adapterName, 'mysql') < 0) {
-            throw new Typecho_Plugin_Exception('启用失败，本插件暂时只支持 MySQL 数据库，您的数据库是：'.$adapterName);
+        if (strpos($adapterName, 'pgsql') < 0) {
+            throw new Typecho_Plugin_Exception('启用失败，本版本仅用于 PostgreSQL ，您的数据库是：'.$adapterName);
         }
 
         // 检查是否存在对应扩展
@@ -66,7 +66,7 @@ class VOID_Plugin implements Typecho_Plugin_Interface
         /** 字数统计 */
         // contents 表中若无 wordCount 字段则添加
         if (!self::hasColumn($prefix.'contents', 'wordCount')) {
-            self::queryAndCatch('ALTER TABLE `'. $prefix .'contents` ADD COLUMN `wordCount` INT(10) DEFAULT 0;');
+            self::queryAndCatch('ALTER TABLE "'. $prefix .'contents" ADD COLUMN "wordCount" INT DEFAULT 0;');
         }
         // 更新一次字数统计
         VOID_WordCount::updateAllWordCount();
@@ -79,7 +79,7 @@ class VOID_Plugin implements Typecho_Plugin_Interface
         /** 文章点赞 */
         // 创建字段
         if (!self::hasColumn($prefix.'contents', 'likes')) {
-            self::queryAndCatch('ALTER TABLE `'. $prefix .'contents` ADD COLUMN `likes` INT(10) DEFAULT 0;');
+            self::queryAndCatch('ALTER TABLE "'. $prefix .'contents" ADD COLUMN "likes" INT DEFAULT 0;');
         }
         // 加入查询
         Typecho_Plugin::factory('Widget_Archive')->___likes = array('VOID_Plugin', 'likes');
@@ -87,16 +87,16 @@ class VOID_Plugin implements Typecho_Plugin_Interface
         /** 评论赞踩 */
         // 创建字段
         if (!self::hasColumn($prefix.'comments', 'likes')) {
-            self::queryAndCatch('ALTER TABLE `'. $prefix .'comments` ADD COLUMN `likes` INT(10) DEFAULT 0;');
+            self::queryAndCatch('ALTER TABLE "'. $prefix .'comments" ADD COLUMN "likes" INT DEFAULT 0;');
         }
         if (!self::hasColumn($prefix.'comments', 'dislikes')) {
-            self::queryAndCatch('ALTER TABLE `'. $prefix .'comments` ADD COLUMN `dislikes` INT(10) DEFAULT 0;');
+            self::queryAndCatch('ALTER TABLE "'. $prefix .'comments" ADD COLUMN "dislikes" INT DEFAULT 0;');
         }
 
         /** 浏览量统计 */
         // 创建字段
         if (!self::hasColumn($prefix.'contents', 'viewsNum')) {
-            self::queryAndCatch('ALTER TABLE `'. $prefix .'contents` ADD COLUMN `viewsNum` INT(10) DEFAULT 0;');
+            self::queryAndCatch('ALTER TABLE "'. $prefix .'contents" ADD COLUMN "viewsNum" INT DEFAULT 0;');
         }
         //增加浏览数
         Typecho_Plugin::factory('Widget_Archive')->beforeRender = array('VOID_Plugin', 'updateViewCount');
@@ -107,19 +107,19 @@ class VOID_Plugin implements Typecho_Plugin_Interface
         // 创建表，保存点赞与投票相关信息
         $table_name = $prefix . 'votes';
         if (!self::hasTable($table_name)) {
-            $sql = 'create table IF NOT EXISTS `'.$table_name.'` (
-                `vid` int unsigned auto_increment,
-                `id` int unsigned not null,
-                `table` char(32) not null,
-                `type` char(32) not null,
-                `agent` text,
-                `ip` varchar(128),
-                `created` int unsigned default 0,
-                primary key (`vid`)
-            ) default charset=utf8;
-            CREATE INDEX index_ip ON '.$table_name.'(`ip`);
-            CREATE INDEX index_id ON '.$table_name.'(`id`);
-            CREATE INDEX index_table ON '.$table_name.'(`table`)';
+            $sql = 'CREATE TABLE IF NOT EXISTS "'.$table_name.'" (
+                "vid" SERIAL,
+                "id" INTEGER NOT NULL,
+                "table" VARCHAR(32) NOT NULL,
+                "type" VARCHAR(32) NOT NULL,
+                "agent" TEXT,
+                "ip" VARCHAR(128),
+                "created" INTEGER DEFAULT 0,
+                PRIMARY KEY ("vid")
+            );
+            CREATE INDEX index_ip ON "'.$table_name.'"("ip");
+            CREATE INDEX index_id ON "'.$table_name.'"("id");
+            CREATE INDEX index_table ON "'.$table_name.'"("table")';
 
             $sqls = explode(';', $sql);
             foreach ($sqls as $sql) {
@@ -127,7 +127,7 @@ class VOID_Plugin implements Typecho_Plugin_Interface
             }
         } else {
             if (!self::hasColumn($prefix.'votes', 'created')) {
-                self::queryAndCatch('ALTER TABLE `'. $prefix .'votes` ADD COLUMN `created` INT(10) DEFAULT 0;');
+                self::queryAndCatch('ALTER TABLE "'. $prefix .'votes" ADD COLUMN "created" INT DEFAULT 0;');
             }
         }
 
